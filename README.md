@@ -30,11 +30,27 @@ Notes:
 - `pi` mode depends on `tmux`.
 - If you're on Windows, prefer using this plugin in WSL until native Windows behavior is validated.
 
+### Ghostty note (macOS)
+
+If `Shift+Enter` doesn't insert a newline in PI while running inside tmux, add this to your Ghostty config (`~/Library/Application Support/com.mitchellh.ghostty/config`):
+
+```ini
+# Map Shift+Enter to LF (Ctrl+J)
+keybind = shift+enter=text:\x0a
+```
+
+Then restart Ghostty and restart tmux sessions (`tmux kill-server`).
+
 Recommended `~/.tmux.conf`:
 
 ```tmux
 set -g default-terminal "xterm-256color"
 set -ga terminal-overrides ",xterm-256color:Tc"
+
+# Pass modified keys (like Shift+Enter) through tmux
+set -g xterm-keys on
+set -s extended-keys on
+set -as terminal-features ",xterm-256color:extkeys"
 
 # Better scrollback experience with interactive TUIs like pi
 set -g mouse on
