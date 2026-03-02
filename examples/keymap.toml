@@ -1,0 +1,14 @@
+[[mgr.prepend_keymap]]
+on   = ["g", "p"]
+run  = "plugin tui-toggle -- pi"
+desc = "Toggle pi (detach with Ctrl+B then D)"
+
+[[mgr.prepend_keymap]]
+on   = ["g", "G"]
+run  = "plugin tui-toggle -- pi --scope=global"
+desc = "Toggle global pi session"
+
+[[mgr.prepend_keymap]]
+on   = ["g", "t"]
+run  = "plugin tui-toggle -- shell"
+desc = "Open shell in current Yazi directory"
