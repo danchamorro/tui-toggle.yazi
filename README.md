@@ -75,7 +75,7 @@ cp main.lua ~/.config/yazi/plugins/tui-toggle.yazi/main.lua
 ### After publishing
 
 ```bash
-ya pkg add danchamorro/tui-toggle.yazi
+ya pkg add danchamorro/tui-toggle
 ```
 
 ## Session scopes
