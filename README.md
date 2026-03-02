@@ -78,6 +78,18 @@ cp main.lua ~/.config/yazi/plugins/tui-toggle.yazi/main.lua
 ya pkg add danchamorro/tui-toggle.yazi
 ```
 
+## Session scopes
+
+`tui-toggle` supports two session scopes for tmux-backed apps like `pi`:
+
+- `scope = "dir"` (default): one session per directory (project-isolated)
+- `scope = "global"`: one shared session reused across directories
+
+Examples:
+
+- `plugin tui-toggle -- pi` -> directory-scoped session (e.g. `pi-<hash>`)
+- `plugin tui-toggle -- pi --scope=global` -> shared global session (`pi`)
+
 ## Keymaps
 
 Add to `~/.config/yazi/keymap.toml`:
