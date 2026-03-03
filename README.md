@@ -1,21 +1,21 @@
 # tui-toggle.yazi
 
-Toggle long-running TUIs from Yazi with persistent `tmux` sessions (starting with `pi`), plus a shell mode that opens in the current Yazi directory.
+Toggle long-running TUIs from Yazi with persistent `tmux` sessions for `pi` and `shell`, with directory or global scopes.
 
 ![tui-toggle demo](assets/demo.gif)
 
 ## Features
 
-- Per-directory `pi` sessions (`scope = "dir"`)
-- Optional global `pi` session (`scope = "global"`)
+- Per-directory `pi` and `shell` sessions (`scope = "dir"`)
+- Optional global sessions (`scope = "global"`)
 - Auto-reattach to existing sessions
-- Detach from `pi` with `Ctrl+B` then `D`
-- `shell` mode opens `$SHELL` in the current Yazi directory and returns on `exit`
+- Detach from tmux-backed apps with `Ctrl+B` then `D`
+- `shell` mode reattaches to the same shell session when reopened
 
 ## Requirements
 
 - Yazi `>= 25.5.31`
-- `tmux` (for tmux-backed apps like `pi`)
+- `tmux` (required for default `pi` and `shell` modes)
 
 ## Platform support
 
@@ -27,7 +27,7 @@ Current reality for this first release:
 
 Notes:
 
-- `pi` mode depends on `tmux`.
+- Default `pi` and `shell` modes depend on `tmux`.
 - If you're on Windows, prefer using this plugin in WSL until native Windows behavior is validated.
 
 ### Ghostty note (macOS)
@@ -78,9 +78,31 @@ cp main.lua ~/.config/yazi/plugins/tui-toggle.yazi/main.lua
 ya pkg add danchamorro/tui-toggle
 ```
 
+## Migrating from v1
+
+In v1, `shell` mode spawned a direct (non-tmux) shell that required `exit` to return to Yazi. Starting in v2, `shell` defaults to `tmux = true` for persistent, detachable sessions -- the same behavior `pi` has always had.
+
+**What changed:**
+
+- `shell` now requires `tmux` by default.
+- Detach with `Ctrl+B` then `D` instead of `exit`.
+- Reattach to the same shell session by triggering the keymap again.
+
+**If you do not have tmux installed** and want the old direct-shell behavior, override in your `init.lua`:
+
+```lua
+require("tui-toggle"):setup({
+	apps = {
+		shell = {
+			tmux = false,
+		},
+	},
+})
+```
+
 ## Session scopes
 
-`tui-toggle` supports two session scopes for tmux-backed apps like `pi`:
+`tui-toggle` supports two session scopes for tmux-backed apps like `pi` and `shell`:
 
 - `scope = "dir"` (default): one session per directory (project-isolated)
 - `scope = "global"`: one shared session reused across directories
@@ -89,6 +111,8 @@ Examples:
 
 - `plugin tui-toggle -- pi` -> directory-scoped session (e.g. `pi-<hash>`)
 - `plugin tui-toggle -- pi --scope=global` -> shared global session (`pi`)
+- `plugin tui-toggle -- shell` -> directory-scoped shell session (e.g. `shell-<hash>`)
+- `plugin tui-toggle -- shell --scope=global` -> shared global shell session (`shell`)
 
 ## Keymaps
 
@@ -108,8 +132,15 @@ desc = "Toggle global pi session"
 [[mgr.prepend_keymap]]
 on   = ["g", "t"]
 run  = "plugin tui-toggle -- shell"
-desc = "Open shell in current Yazi directory"
+desc = "Toggle directory shell session (detach with Ctrl+B then D)"
+
+[[mgr.prepend_keymap]]
+on   = ["g", "T"]
+run  = "plugin tui-toggle -- shell --scope=global"
+desc = "Toggle global shell session"
 ```
+
+Tip: keep `scope = "dir"` as the app default and use `--scope=global` in a dedicated keymap when you want one shared shell.
 
 ## Optional setup
 
@@ -130,8 +161,10 @@ require("tui-toggle"):setup({
 		},
 		shell = {
 			cmd = os.getenv("SHELL") or "sh",
-			tmux = false,
+			tmux = true,
 			scope = "dir",
+			session_prefix = "shell",
+			detach_hint = "Detach: Ctrl+B then D",
 		},
 	},
 })
@@ -142,10 +175,10 @@ require("tui-toggle"):setup({
 Yazi plugins do not provide a universal lifecycle hook for cleanup on process exit. Keep cleanup in your shell wrapper:
 
 ```bash
-_cleanup_pi_tmux_sessions() {
+_cleanup_tui_toggle_tmux_sessions() {
   local session
   tmux list-sessions -F '#{session_name}' 2>/dev/null | while IFS= read -r session; do
-    [[ "$session" == pi || "$session" == pi-* ]] || continue
+    [[ "$session" == pi || "$session" == pi-* || "$session" == shell || "$session" == shell-* ]] || continue
     tmux kill-session -t "$session" 2>/dev/null
   done
 }
@@ -153,7 +186,7 @@ _cleanup_pi_tmux_sessions() {
 yazi() {
   command yazi "$@"
   local exit_code=$?
-  _cleanup_pi_tmux_sessions
+  _cleanup_tui_toggle_tmux_sessions
   return $exit_code
 }
 ```

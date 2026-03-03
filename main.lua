@@ -1,6 +1,7 @@
 --- @since 25.5.31
 
 local TITLE = "tui-toggle"
+local DEFAULT_DETACH_HINT = "Detach: Ctrl+B then D"
 
 local get_cwd = ya.sync(function()
 	local current = cx and cx.active and cx.active.current
@@ -49,15 +50,17 @@ local function build_defaults()
 				tmux = true,
 				scope = "dir",
 				session_prefix = "pi",
-				detach_hint = "Detach: Ctrl+B then D",
+				detach_hint = DEFAULT_DETACH_HINT,
 				env = {
 					TERM = "xterm-256color",
 				},
 			},
 			shell = {
 				cmd = os.getenv("SHELL") or "sh",
-				tmux = false,
+				tmux = true,
 				scope = "dir",
+				session_prefix = "shell",
+				detach_hint = DEFAULT_DETACH_HINT,
 			},
 		},
 	}

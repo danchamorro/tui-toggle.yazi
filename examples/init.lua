@@ -12,8 +12,10 @@ require("tui-toggle"):setup({
 		},
 		shell = {
 			cmd = os.getenv("SHELL") or "sh",
-			tmux = false,
+			tmux = true,
 			scope = "dir",
+			session_prefix = "shell",
+			detach_hint = "Detach: Ctrl+B then D",
 		},
 	},
 })
